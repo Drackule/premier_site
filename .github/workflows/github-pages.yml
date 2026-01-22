@@ -1,11 +1,8 @@
-# Deploying static content to GitHub Pages
-# See https://github.com/actions/starter-workflows/blob/main/pages/static.yml
 name: Deploy build
 
 on:
   push:
-    branches: main
-  # Enable manual deploys from the Actions tab
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -14,43 +11,41 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: false
 
 jobs:
   deploy:
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-        with:
-          persist-credentials: false
+        uses: actions/checkout@v4
 
       - name: Set up Node
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        uses: actions/setup-node@v4
         with:
           node-version: 22
-          package-manager-cache: false
+          cache: npm
 
       - name: Install deps
         run: npm ci
 
       - name: Build
         run: npm run build
-        
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
-        
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
-        
         with:
-          # Upload entire repository
-          path: './dist'
+          path: ./dist
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
